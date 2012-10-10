@@ -1,0 +1,17 @@
+var s_bird = "";
+var g_ressources = [
+    //image
+    {type:"image", src:'res/bird.png'},
+
+    //plist
+    {type: "plist", src: 'res/gameEngineSpriteSheetDefault.plist'},
+    //fnt
+
+    //tmx
+
+    //bgm
+    {type: 'bgm', src: 'res/soundtrack'},
+
+    //effect
+//    {type: 'plane', src: 'res/plane'}
+];

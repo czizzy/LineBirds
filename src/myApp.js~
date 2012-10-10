@@ -1,0 +1,29 @@
+var MyFirstApp = cc.Layer.extend({
+    init:function()
+    {
+        this._super();
+
+        var s = cc.Director.getInstance().getWinSize();
+
+        var layer1 = cc.LayerColor.create(new cc.Color4B(128, 128, 128, 255), 800, 450),
+            bird = cc.Sprite.create("res/bird.png");
+        var size = cc.Director.getInstance().getWinSize();;
+        layer1.setPosition(new cc.Point(0.0,0.0));
+        layer1.addChild(bird);
+        bird.setPosition(new cc.Point(size.width/2,size.height/2));
+        //bird.setPosition(new cc.Point(0.0,0.0));
+
+        this.addChild(layer1);
+        return true;
+    }
+
+});
+
+var MyScene = cc.Scene.extend({
+    onEnter:function(){
+        this._super();
+        var layer = new MyFirstApp();
+        layer.init();
+        this.addChild(layer);
+    }
+});
