@@ -36,10 +36,10 @@
         //SingleEngineFile:'',
         appFiles:[
             'src/resource.js',
+            'src/bird.js',
             'src/myApp.js',
             'src/background.js',
-            'src/menu.js',
-            'src/BirdSprite.js'//add your own files in order here
+            'src/menu.js'
         ]
     };
     window.addEventListener('DOMContentLoaded', function () {

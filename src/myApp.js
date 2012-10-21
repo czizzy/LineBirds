@@ -37,7 +37,7 @@ var MyFirstApp = cc.LayerColor.extend({
 
         // this._birdSprite.scheduleUpdate();
         // this.schedule(this.update);
-
+        console.log('dd');
     },
     onEnter: function() {
         this._super();
@@ -59,7 +59,8 @@ var MyFirstApp = cc.LayerColor.extend({
 
     playSound:function(){
         cc.log("Playing sound");
-        cc.AudioEngine.getInstance().playEffect("res/plane");
+        console.log(cc.AudioEngine.getInstance().setEffectsVolume(1));
+        cc.AudioEngine.getInstance().playEffect(effectPlane);
     },
     playSong:function(){
         cc.log("Playing song");
@@ -78,11 +79,8 @@ var MyFirstApp = cc.LayerColor.extend({
 
 });
 
-var MyScene = cc.Scene.extend({
-    onEnter:function(){
-        this._super();
-        var layer = new MyFirstApp();
-        layer.init();
-        this.addChild(layer);
-    }
-});
+MyFirstApp.create = function() {
+    var sg = new MyFirstApp();
+    sg.init();
+    return sg;
+};

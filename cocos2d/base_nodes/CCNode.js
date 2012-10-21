@@ -185,6 +185,10 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
         this._contentSize = cc.size(0, 0);
         this._position = cc.p(0, 0);
 
+        //this.setAnchorPoint = this._setAnchorPointByValue;
+        //this.setPosition = this._setPositionByValue;
+        //this.setContentSize = this._setContentSizeByValue;
+
         var director = cc.Director.getInstance();
         this._actionManager = director.getActionManager();
         this.getActionManager = function () {
@@ -193,8 +197,32 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
         this._scheduler = director.getScheduler();
         this.getScheduler = function () {
             return this._scheduler;
-        }
+        };
     },
+
+    init:function(){
+        if (cc.NODE_TRANSFORM_USING_AFFINE_MATRIX) {
+            this._isTransformGLDirty = true;
+        }
+        this._anchorPoint = cc.p(0, 0);
+        this._anchorPointInPoints = cc.p(0, 0);
+        this._contentSize = cc.size(0, 0);
+        this._position = cc.p(0, 0);
+
+        //this.setAnchorPoint = this._setAnchorPointByValue;
+        //this.setPosition = this._setPositionByValue;
+        //this.setContentSize = this._setContentSizeByValue;
+
+        var director = cc.Director.getInstance();
+        this._actionManager = director.getActionManager();
+        this.getActionManager = function () {
+            return this._actionManager;
+        };
+        this._scheduler = director.getScheduler();
+        this.getScheduler = function () {
+            return this._scheduler;
+        };
+    } ,
 
     /**
      * @param {Array} array
@@ -347,7 +375,7 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
      * @private
      */
     _setZOrder:function (z) {
-        this._zOrder = z
+        this._zOrder = z;
     },
 
     setZOrder:function (z) {
@@ -479,16 +507,28 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     setPosition:function (newPosOrxValue, yValue) {
         //save dirty region when before change
         //this._addDirtyRegionToDirector(this.getBoundingBoxToWorld());
-        if (yValue) {
-            this._position.x = newPosOrxValue;
-            this._position.y = yValue;
-            //this._position = cc.p(newPosOrxValue,yValue);
-        } else if (newPosOrxValue.y != null) {
-            this._position = newPosOrxValue;
+        if (arguments.length==2) {
+            this._position = new cc.Point(newPosOrxValue, yValue);
+            //this.setPosition = this._setPositionByValue;
+        } else if (arguments.length==1) {
+            this._position = new cc.Point(newPosOrxValue.x, newPosOrxValue.y);
+            //this.setPosition = this._setPositionByValue;
         }
 
         //save dirty region when after changed
         //this._addDirtyRegionToDirector(this.getBoundingBoxToWorld());
+        this.setNodeDirty();
+    },
+
+    _setPositionByValue:function (newPosOrxValue, yValue) {
+        if (arguments.length==2) {
+            this._position.x = newPosOrxValue;
+            this._position.y = yValue;
+            //this._position = cc.p(newPosOrxValue,yValue);
+        } else if (arguments.length==1) {
+            this._position.x = newPosOrxValue.x;
+            this._position.y = newPosOrxValue.y;
+        }
         this.setNodeDirty();
     },
 
@@ -622,12 +662,23 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
             //save dirty region when before change
             //this._addDirtyRegionToDirector(this.getBoundingBoxToWorld());
 
-            this._anchorPoint = point;
-            this._anchorPointInPoints = cc.p(this._contentSize.width * this._anchorPoint.x,
-                this._contentSize.height * this._anchorPoint.y);
+            this._anchorPoint = new cc.Point(point.x, point.y);
+            this._anchorPointInPoints = new cc.Point(this._contentSize.width * this._anchorPoint.x, this._contentSize.height * this._anchorPoint.y);
+
+            //this.setAnchorPoint = this._setAnchorPointByValue;
 
             //save dirty region when after changed
             //this._addDirtyRegionToDirector(this.getBoundingBoxToWorld());
+            this.setNodeDirty();
+        }
+    },
+
+    _setAnchorPointByValue:function (point) {
+        if (!cc.Point.CCPointEqualToPoint(point, this._anchorPoint)) {
+            this._anchorPoint.x = point.x;
+            this._anchorPoint.y = point.y;
+            this._anchorPointInPoints.x = this._contentSize.width * this._anchorPoint.x;
+            this._anchorPointInPoints.y = this._contentSize.height * this._anchorPoint.y;
             this.setNodeDirty();
         }
     },
@@ -655,12 +706,21 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
         if (!cc.Size.CCSizeEqualToSize(size, this._contentSize)) {
             //save dirty region when before change
             //this._addDirtyRegionToDirector(this.getBoundingBoxToWorld());
-            this._contentSize = size;
-
-            this._anchorPointInPoints = cc.p(this._contentSize.width * this._anchorPoint.x,
-                this._contentSize.height * this._anchorPoint.y);
+            this._contentSize = new cc.Size(size.width, size.height);
+            this._anchorPointInPoints = new cc.Point(this._contentSize.width * this._anchorPoint.x, this._contentSize.height * this._anchorPoint.y);
             //save dirty region when before change
             //this._addDirtyRegionToDirector(this.getBoundingBoxToWorld());
+            //this.setContentSize = this._setContentSizeByValue;
+            this.setNodeDirty();
+        }
+    },
+
+    _setContentSizeByValue:function (size) {
+        if (!cc.Size.CCSizeEqualToSize(size, this._contentSize)) {
+            this._contentSize.width = size.width;
+            this._contentSize.height = size.height;
+            this._anchorPointInPoints.x = this._contentSize.width * this._anchorPoint.x;
+            this._anchorPointInPoints.y = this._contentSize.height * this._anchorPoint.y;
             this.setNodeDirty();
         }
     },
@@ -1168,81 +1228,89 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
      * @param {CanvasContext} ctx
      */
     visit:function (ctx) {
+        //visit for canvas
+
         // quick return if not visible
         if (!this._isVisible)
             return;
 
         var context = ctx || cc.renderContext, i;
-        if (cc.renderContextType == cc.CANVAS) {
-            context.save();
-            this.transform(context);
-
-            if (this._children && this._children.length > 0) {
-                this.sortAllChildren();
-                // draw children zOrder < 0
-                for (i = 0; i < this._children.length; i++) {
-                    if (this._children[i] && this._children[i]._zOrder < 0)
+        context.save();
+        this.transform(context);
+        if (this._children && this._children.length > 0) {
+            this.sortAllChildren();
+            // draw children zOrder < 0
+            for (i = 0; i < this._children.length; i++) {
+                if (this._children[i] && this._children[i]._zOrder < 0)
+                    this._children[i].visit(context);
+                else
+                    break;
+            }
+            this.draw(context);
+            if (this._children) {
+                for (; i < this._children.length; i++) {
+                    if (this._children[i] && this._children[i]._zOrder >= 0)
                         this._children[i].visit(context);
-                    else
-                        break;
                 }
-                this.draw(context);
-                if (this._children) {
-                    for (; i < this._children.length; i++) {
-                        if (this._children[i] && this._children[i]._zOrder >= 0)
-                            this._children[i].visit(context);
-                    }
-                }
-            } else
-                this.draw(context);
-
-            this._orderOfArrival = 0;
-            context.restore();
-        } else {
-            if (this._grid && this._grid.isActive()) {
-                this._grid.beforeDraw();
             }
+        } else
+            this.draw(context);
 
-            this.transform(context);
-            if (this._children && this._children.length > 0) {
-                this.sortAllChildren();
-                // draw children zOrder < 0
-                for (i = 0; i < this._children.length; i++) {
-                    if (this._children[i] && this._children[i]._zOrder < 0) {
-                        this._children[i].visit(context);
-                    } else {
-                        break;
-                    }
-                }
+        this._orderOfArrival = 0;
+        context.restore();
+    },
 
-                //if (this._isInDirtyRegion()) {
-                // self draw
-                this.draw(context);
-                //}
+    _visitForWebGL:function (ctx) {
+        if (!this._isVisible)
+            return;
 
-                // draw children zOrder >= 0
-                if (this._children) {
-                    for (; i < this._children.length; i++) {
-                        if (this._children[i] && this._children[i]._zOrder >= 0) {
-                            this._children[i].visit(context);
-                        }
-                    }
-                }
-            } else {
-                //if (this._isInDirtyRegion()) {
-                // self draw
-                this.draw(context);
-                //}
-            }
+        var context = ctx, i;
 
-            this._orderOfArrival = 0;
+        context.save();
 
-            if (this._grid && this._grid.isActive()) {
-                this._grid.afterDraw(this);
-            }
-
-            context.restore();
+        if (this._grid && this._grid.isActive()) {
+            this._grid.beforeDraw();
         }
+
+        this.transform(context);
+        if (this._children && this._children.length > 0) {
+            this.sortAllChildren();
+            // draw children zOrder < 0
+            for (i = 0; i < this._children.length; i++) {
+                if (this._children[i] && this._children[i]._zOrder < 0) {
+                    this._children[i].visit(context);
+                } else {
+                    break;
+                }
+            }
+
+            //if (this._isInDirtyRegion()) {
+            // self draw
+            this.draw(context);
+            //}
+
+            // draw children zOrder >= 0
+            if (this._children) {
+                for (; i < this._children.length; i++) {
+                    if (this._children[i] && this._children[i]._zOrder >= 0) {
+                        this._children[i].visit(context);
+                    }
+                }
+            }
+        } else {
+            //if (this._isInDirtyRegion()) {
+            // self draw
+            this.draw(context);
+            //}
+        }
+
+        this._orderOfArrival = 0;
+
+        if (this._grid && this._grid.isActive()) {
+            this._grid.afterDraw(this);
+        }
+
+        context.restore();
     },
 
     /** performs OpenGL view-matrix transformation of it's ancestors.<br/>
@@ -1261,63 +1329,67 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
      * @param {CanvasContext} ctx
      */
     transform:function (ctx) {
+        // transform for canvas
         var context = ctx || cc.renderContext;
+
         // transformations
-        if (cc.renderContextType == cc.CANVAS) {
-            if (!this._ignoreAnchorPointForPosition) {
-                if (this._parent) {
-                    context.translate(0 | (this._position.x - this._parent._anchorPointInPoints.x), -(0 | (this._position.y - this._parent._anchorPointInPoints.y)));
-                } else {
-                    context.translate(0 | this._position.x, -(0 | this._position.y));
-                }
+        if (!this._ignoreAnchorPointForPosition) {
+            if (this._parent) {
+                context.translate(0 | (this._position.x - this._parent._anchorPointInPoints.x), -(0 | (this._position.y - this._parent._anchorPointInPoints.y)));
             } else {
-                if (this._parent) {
-                    context.translate(0 | ( this._position.x - this._parent._anchorPointInPoints.x + this._anchorPointInPoints.x),
-                        -(0 | (this._position.y - this._parent._anchorPointInPoints.y + this._anchorPointInPoints.y)));
-                } else {
-                    context.translate(0 | ( this._position.x + this._anchorPointInPoints.x), -(0 | (this._position.y + this._anchorPointInPoints.y)));
-                }
-            }
-
-            if (this._rotation != 0)
-                context.rotate(this._rotationRadians);
-
-            if ((this._scaleX != 1) || (this._scaleY != 1))
-                context.scale(this._scaleX, this._scaleY);
-
-            if ((this._skewX != 0) || (this._skewY != 0)) {
-                context.transform(1,
-                    -Math.tan(cc.DEGREES_TO_RADIANS(this._skewY)),
-                    -Math.tan(cc.DEGREES_TO_RADIANS(this._skewX)),
-                    1, 0, 0);
+                context.translate(0 | this._position.x, -(0 | this._position.y));
             }
         } else {
-            //Todo WebGL implement need fixed
-            var transfrom4x4;
-
-            // Convert 3x3 into 4x4 matrix
-            var tmpAffine = this.nodeToParentTransform();
-            //CGAffineToGL(&tmpAffine, transfrom4x4.mat);
-
-            // Update Z vertex manually
-            //transfrom4x4.mat[14] = m_fVertexZ;
-
-            //kmGLMultMatrix( &transfrom4x4 );
-
-
-            // XXX: Expensive calls. Camera should be integrated into the cached affine matrix
-            /*if ( m_pCamera != NULL && !(m_pGrid != NULL && m_pGrid->isActive()) ) {
-             bool translate = (m_tAnchorPointInPoints.x != 0.0f || m_tAnchorPointInPoints.y != 0.0f);
-
-             if( translate )
-             kmGLTranslatef(RENDER_IN_SUBPIXEL(m_tAnchorPointInPoints.x), RENDER_IN_SUBPIXEL(m_tAnchorPointInPoints.y), 0 );
-
-             m_pCamera->locate();
-
-             if( translate )
-             kmGLTranslatef(RENDER_IN_SUBPIXEL(-m_tAnchorPointInPoints.x), RENDER_IN_SUBPIXEL(-m_tAnchorPointInPoints.y), 0 );
-             }*/
+            if (this._parent) {
+                context.translate(0 | ( this._position.x - this._parent._anchorPointInPoints.x + this._anchorPointInPoints.x),
+                    -(0 | (this._position.y - this._parent._anchorPointInPoints.y + this._anchorPointInPoints.y)));
+            } else {
+                context.translate(0 | ( this._position.x + this._anchorPointInPoints.x), -(0 | (this._position.y + this._anchorPointInPoints.y)));
+            }
         }
+
+        if (this._rotation != 0)
+            context.rotate(this._rotationRadians);
+
+        if ((this._scaleX != 1) || (this._scaleY != 1))
+            context.scale(this._scaleX, this._scaleY);
+
+        if ((this._skewX != 0) || (this._skewY != 0)) {
+            context.transform(1,
+                -Math.tan(cc.DEGREES_TO_RADIANS(this._skewY)),
+                -Math.tan(cc.DEGREES_TO_RADIANS(this._skewX)),
+                1, 0, 0);
+        }
+    },
+
+    _transformForWebGL:function (ctx) {
+        var context = ctx;
+
+        //Todo WebGL implement need fixed
+        var transfrom4x4;
+
+        // Convert 3x3 into 4x4 matrix
+        var tmpAffine = this.nodeToParentTransform();
+        //CGAffineToGL(&tmpAffine, transfrom4x4.mat);
+
+        // Update Z vertex manually
+        //transfrom4x4.mat[14] = m_fVertexZ;
+
+        //kmGLMultMatrix( &transfrom4x4 );
+
+
+        // XXX: Expensive calls. Camera should be integrated into the cached affine matrix
+        /*if ( m_pCamera != NULL && !(m_pGrid != NULL && m_pGrid->isActive()) ) {
+         bool translate = (m_tAnchorPointInPoints.x != 0.0f || m_tAnchorPointInPoints.y != 0.0f);
+
+         if( translate )
+         kmGLTranslatef(RENDER_IN_SUBPIXEL(m_tAnchorPointInPoints.x), RENDER_IN_SUBPIXEL(m_tAnchorPointInPoints.y), 0 );
+
+         m_pCamera->locate();
+
+         if( translate )
+         kmGLTranslatef(RENDER_IN_SUBPIXEL(-m_tAnchorPointInPoints.x), RENDER_IN_SUBPIXEL(-m_tAnchorPointInPoints.y), 0 );
+         }*/
     },
 
     //scene managment

@@ -59,10 +59,11 @@ var cocos2dApp = cc.Application.extend({
         director.runWithScene(new this.startScene());
 
         // add by me
-        cc.AudioEngine.getInstance().playBackgroundMusic("res/soundtrack", true);
+//        cc.AudioEngine.getInstance().playBackgroundMusic("res/soundtrack", true);
 
         return true;
     }
 });
-
-var myApp = new cocos2dApp(MenuScene);
+//debugger;
+var myApp = new cocos2dApp(Menu.scene);
+cc.dumpConfig();
