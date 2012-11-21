@@ -255,7 +255,7 @@ cc.ParticleBatchNode = cc.Node.extend(/** @lends cc.ParticleBatchNode# */{
     /**
      * @param {Boolean} doCleanup
      */
-    removeAllChildrenWithCleanup:function (doCleanup) {
+    removeAllChildren:function (doCleanup) {
         for (var i = 0; i < this._children.length; i++) {
             this._children[i].setBatchNode(null);
         }
@@ -320,7 +320,10 @@ cc.ParticleBatchNode = cc.Node.extend(/** @lends cc.ParticleBatchNode# */{
      * @param {Number} dst
      */
     setBlendFunc:function (src, dst) {
-        this._blendFunc = {src:src, dst:dst};
+        if(arguments.length == 1)
+            this._blendFunc = src;
+        else
+            this._blendFunc = {src:src, dst:dst};
     },
 
     /**

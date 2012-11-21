@@ -14,7 +14,7 @@ var Bird = cc.Sprite.extend({
     },
 
     drawBird: function() {
-        this.removeAllChildrenWithCleanup();
+        this.removeAllChildren();
         this.body = cc.Sprite.createWithSpriteFrameName(this.name + this._currentBodyIndex + '.png');
         this.addChild(this.body);
 
@@ -34,29 +34,29 @@ var Bird = cc.Sprite.extend({
         this.drawBird();
     },
 
-    handleKey: function(e) {
-        if(e === cc.KEY.left) {
-            this._currentRotation--;
-        } else if (e === cc.KEY.right) {
-            this._currentRotation++;
-        }
+    // handleKey: function(e) {
+    //     if(e === cc.KEY.left) {
+    //         this._currentRotation--;
+    //     } else if (e === cc.KEY.right) {
+    //         this._currentRotation++;
+    //     }
 
-        if(this._currentRotation < 0) this._currentRotation = 360;
-        if(this._currentRotation > 360) this._currentRotation = 0;
+    //     if(this._currentRotation < 0) this._currentRotation = 360;
+    //     if(this._currentRotation > 360) this._currentRotation = 0;
 
-    },
-    handleTouch: function(touchLocation) {
-        if(touchLocation < 300) {
-            this._currentRotation = 0;
-        } else {
-            this._currentRotation = 180;
-        }
-    },
-    handleTouchMove: function(touchLocation) {
-        var angle = Math.atan2(touchLocation.x - 300, touchLocation.y - 300);
-        angle = angle * (180/Math.PI);
-        this._currentRotation = angle;
-    }
+    // },
+    // handleTouch: function(touchLocation) {
+    //     if(touchLocation < 300) {
+    //         this._currentRotation = 0;
+    //     } else {
+    //         this._currentRotation = 180;
+    //     }
+    // },
+    // handleTouchMove: function(touchLocation) {
+    //     var angle = Math.atan2(touchLocation.x - 300, touchLocation.y - 300);
+    //     angle = angle * (180/Math.PI);
+    //     this._currentRotation = angle;
+    // }
 });
 
 var BirdKirby = Bird.extend({

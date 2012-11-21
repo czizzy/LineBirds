@@ -4,12 +4,8 @@ var MyFirstApp = cc.LayerColor.extend({
     init:function()
     {
         this._super();
-        this.initWithColor(new cc.Color4B(0,0,0,255));
+        this.setColor(new cc.Color4B(0,0,0,255));
         var size = cc.Director.getInstance().getWinSize();
-        console.log(cc);
-
-        cc.AudioEngine.getInstance().setEffectsVolume(0.5);
-        cc.AudioEngine.getInstance().setBackgroundMusicVolume(0.5);
 
         var menuItem1 = new cc.MenuItemFont.create("Play Sound",this,this.playSound);
         var menuItem2 = new cc.MenuItemFont.create("Play Song",this,this.playSong);

@@ -184,7 +184,7 @@ cc.ParallaxNode = cc.Node.extend(/** @lends cc.ParallaxNode# */{
      *  Remove all children with cleanup
      * @param {Boolean} cleanup
      */
-    removeAllChildrenWithCleanup:function (cleanup) {
+    removeAllChildren:function (cleanup) {
         this._parallaxArray = [];
         this._super(cleanup);
     },
@@ -224,6 +224,5 @@ cc.ParallaxNode = cc.Node.extend(/** @lends cc.ParallaxNode# */{
  * var voidNode = cc.ParallaxNode.create();
  */
 cc.ParallaxNode.create = function () {
-    var ret = new cc.ParallaxNode();
-    return ret;
+    return new cc.ParallaxNode();
 };

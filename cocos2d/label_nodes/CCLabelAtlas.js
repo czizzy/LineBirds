@@ -54,7 +54,8 @@ cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
             textureFilename = arg[1];
             width = arg[2];
             height = arg[3];
-            startChar = String.fromCharCode(arg[4]);
+            //startChar = String.fromCharCode(arg[4]);
+            startChar = arg[4];
             cc.Assert(label !== null, "Label must be non-nil");
         }
 
@@ -116,8 +117,7 @@ cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
         var len = label.length;
         this._textureAtlas.resizeCapacity(len);
 
-        var s = new cc.size(len * this._itemWidth, this._itemHeight);
-        this.setContentSize(s);
+        this.setContentSize(new cc.size(len * this._itemWidth, this._itemHeight));
 
         if (this._children) {
             for (var i = 0; i < this._children.length; i++) {
@@ -129,6 +129,19 @@ cc.LabelAtlas = cc.AtlasNode.extend(/** @lends cc.LabelAtlas# */{
         }
         this.updateAtlasValues();
     },
+
+    setOpacity:function(opacity){
+        if(this._opacity != opacity){
+            this._opacity = opacity;
+
+            for (var i = 0; i < this._children.length; i++) {
+                if (this._children[i]) {
+                    this._children[i].setOpacity(opacity);
+                }
+            }
+        }
+    },
+
     /**
      * @param {cc.Color3B} color3
      */

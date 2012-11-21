@@ -152,7 +152,7 @@ cc.Director = cc.Class.extend(/** @lends cc.Director# */{
     _scenesStack:null,
     _projectionDelegate:null,
     _runningScene:null,
-    _szFPS:'',
+
     _frames:0,
     _totalFrames:0,
     _secondsPerFrame:0,
@@ -164,6 +164,7 @@ cc.Director = cc.Class.extend(/** @lends cc.Director# */{
     _touchDispatcher:null,
     _keyboardDispatcher:null,
     _accelerometer:null,
+    _mouseDispatcher:null,
 
     _watcherFun:null,
     _watcherSender:null,
@@ -212,7 +213,6 @@ cc.Director = cc.Class.extend(/** @lends cc.Director# */{
         this._frameRate = 0;
         this._displayStats = false;//can remove
         this._totalFrames = this._frames = 0;
-        this._szFPS = "";
         this._lastUpdate = new cc.timeval();
 
         //Paused?
@@ -243,6 +243,10 @@ cc.Director = cc.Class.extend(/** @lends cc.Director# */{
 
         //accelerometer
         //this._accelerometer = new cc.Accelerometer();
+
+        //MouseDispatcher
+        this._mouseDispatcher = new cc.MouseDispatcher();
+        this._mouseDispatcher.init();
 
         return true;
     },
@@ -920,9 +924,7 @@ cc.Director = cc.Class.extend(/** @lends cc.Director# */{
                     this._frames = 0;
                     this._accumDt = 0;
 
-                    this._szFPS = ('' + this._frameRate.toFixed(1));
-                    this._FPSLabel.setString(this._szFPS);
-
+                    this._FPSLabel.setString(this._frameRate.toFixed(1));
                     this._drawsLabel.setString((0 | cc.g_NumberOfDraws).toString());
                 }
                 this._FPSLabel.visit();
@@ -1119,6 +1121,15 @@ cc.Director = cc.Class.extend(/** @lends cc.Director# */{
         if (this._accelerometer != accelerometer) {
             this._accelerometer = accelerometer;
         }
+    },
+
+    getMouseDispatcher:function(){
+       return this._mouseDispatcher;
+    },
+
+    setMouseDispatcher:function( mouseDispatcher){
+        if(this._mouseDispatcher != mouseDispatcher)
+            this._mouseDispatcher = mouseDispatcher;
     },
 
     _createStatsLabel:function () {

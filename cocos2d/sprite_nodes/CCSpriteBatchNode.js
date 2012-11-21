@@ -615,7 +615,10 @@ cc.SpriteBatchNode = cc.Node.extend(/** @lends cc.SpriteBatchNode# */{
      * @param {Number} dst
      */
     setBlendFunc:function (src, dst) {
-        this._blendFunc = {src:src, dst:dst};
+        if(arguments.length == 1)
+            this._blendFunc = src;
+        else
+            this._blendFunc = {src:src, dst:dst};
     },
 
     /**
@@ -795,10 +798,10 @@ cc.SpriteBatchNode = cc.Node.extend(/** @lends cc.SpriteBatchNode# */{
 
     /**
      * <p>Removes all children from the container and do a cleanup all running actions depending on the cleanup parameter. <br/>
-     * (override removeAllChildrenWithCleanup of cc.Node)</p>
+     * (override removeAllChildren of cc.Node)</p>
      * @param {Boolean} cleanup
      */
-    removeAllChildrenWithCleanup:function (cleanup) {
+    removeAllChildren:function (cleanup) {
         // Invalidate atlas index. issue #569
         // useSelfRender should be performed on all descendants. issue #1216
         var i;

@@ -32,7 +32,7 @@ var PROPERTY_BLENDFUNC = "blendFunc";
 
 cc.SpriteLoader = cc.NodeLoader.extend({
     _createCCNode:function (parent, ccbReader) {
-        return new cc.Sprite();
+        return cc.Sprite.create();
     },
 
     onHandlePropTypeColor3:function (node, parent, propertyName, color3BValue, ccbReader) {
@@ -66,7 +66,7 @@ cc.SpriteLoader = cc.NodeLoader.extend({
     onHandlePropTypeFlip:function (node, parent, propertyName, flip, ccbReader) {
         if (propertyName == PROPERTY_FLIP) {
             node.setFlipX(flip[0]);
-            node.setFlipX(flip[1]);
+            node.setFlipY(flip[1]);
         } else {
             this._super(node, parent, propertyName, flip, ccbReader);
         }
@@ -206,12 +206,13 @@ var PROPERTY_ISENABLED = "isEnabled";
 
 cc.MenuItemLoader = cc.NodeLoader.extend({
     _createCCNode:function (parent, ccbReader) {
+        return null;
     },
 
     onHandlePropTypeBlock:function (node, parent, propertyName, blockData, ccbReader) {
         if (propertyName == PROPERTY_BLOCK) {
             if (null != blockData) { // Add this condition to allow CCMenuItemImage without target/selector predefined
-                node.setTarget(blockData.target, blockData.selMenuHander);
+                node.setTarget(blockData.selMenuHander, blockData.target);
             }
         } else {
             this._super(node, parent, propertyName, blockData, ccbReader);

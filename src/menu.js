@@ -20,16 +20,20 @@ var Menu = cc.Layer.extend({
         bush2.setAnchorPoint(new cc.Point(1, 0));
         this.addChild(bush2);
 
-        var play = cc.MenuItemLabel.create(cc.LabelBMFont.create('Play', fntBig), this, function() {
+        var play = cc.MenuItemLabel.create(cc.LabelBMFont.create('Play', fntBig), function() {
             this.clickEffect();
             this.play();
-        });
-        var options = cc.MenuItemLabel.create(cc.LabelBMFont.create('Options', fntSmall), this, function() {
+        }, this);
+        var options = cc.MenuItemLabel.create(cc.LabelBMFont.create('Options', fntSmall), function() {
             this.clickEffect();
             this.options();
-        });
+        }, this);
+        var box2d = cc.MenuItemLabel.create(cc.LabelBMFont.create('box2d', fntBig), function() {
+            this.clickEffect();
+            this.gotoBox2d();
+        }, this);
 
-        var menu = cc.Menu.create(play, options);
+        var menu = cc.Menu.create(play, options, box2d);
         menu.alignItemsVerticallyWithPadding(20);
         this.addChild(menu);
 
@@ -79,6 +83,12 @@ var Menu = cc.Layer.extend({
 
     play: function() {
         this.clickEffect();
+    },
+
+    gotoBox2d: function() {
+        var scene = cc.Scene.create();
+        scene.addChild(Box2dLayer.create());
+        cc.Director.getInstance().replaceScene(cc.TransitionFade.create(1.2, scene));
     }
 });
 

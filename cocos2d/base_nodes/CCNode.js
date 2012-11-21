@@ -173,34 +173,16 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     _actionManager:null,
     _scheduler:null,
 
+    _initializedNode:false,
+
     /**
      * Constructor
      */
     ctor:function () {
-        if (cc.NODE_TRANSFORM_USING_AFFINE_MATRIX) {
-            this._isTransformGLDirty = true;
-        }
-        this._anchorPoint = cc.p(0, 0);
-        this._anchorPointInPoints = cc.p(0, 0);
-        this._contentSize = cc.size(0, 0);
-        this._position = cc.p(0, 0);
-
-        //this.setAnchorPoint = this._setAnchorPointByValue;
-        //this.setPosition = this._setPositionByValue;
-        //this.setContentSize = this._setContentSizeByValue;
-
-        var director = cc.Director.getInstance();
-        this._actionManager = director.getActionManager();
-        this.getActionManager = function () {
-            return this._actionManager;
-        };
-        this._scheduler = director.getScheduler();
-        this.getScheduler = function () {
-            return this._scheduler;
-        };
+        this._initNode();
     },
 
-    init:function(){
+    _initNode:function () {
         if (cc.NODE_TRANSFORM_USING_AFFINE_MATRIX) {
             this._isTransformGLDirty = true;
         }
@@ -208,10 +190,6 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
         this._anchorPointInPoints = cc.p(0, 0);
         this._contentSize = cc.size(0, 0);
         this._position = cc.p(0, 0);
-
-        //this.setAnchorPoint = this._setAnchorPointByValue;
-        //this.setPosition = this._setPositionByValue;
-        //this.setContentSize = this._setContentSizeByValue;
 
         var director = cc.Director.getInstance();
         this._actionManager = director.getActionManager();
@@ -222,7 +200,14 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
         this.getScheduler = function () {
             return this._scheduler;
         };
-    } ,
+        this._initializedNode = true;
+    },
+
+    init:function () {
+        if(this._initializedNode === false)
+            this._initNode();
+        return true;
+    },
 
     /**
      * @param {Array} array
@@ -507,25 +492,24 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     setPosition:function (newPosOrxValue, yValue) {
         //save dirty region when before change
         //this._addDirtyRegionToDirector(this.getBoundingBoxToWorld());
-        if (arguments.length==2) {
+        if (arguments.length == 2) {
             this._position = new cc.Point(newPosOrxValue, yValue);
             //this.setPosition = this._setPositionByValue;
-        } else if (arguments.length==1) {
+        } else if (arguments.length == 1) {
             this._position = new cc.Point(newPosOrxValue.x, newPosOrxValue.y);
             //this.setPosition = this._setPositionByValue;
         }
-
         //save dirty region when after changed
         //this._addDirtyRegionToDirector(this.getBoundingBoxToWorld());
         this.setNodeDirty();
     },
 
     _setPositionByValue:function (newPosOrxValue, yValue) {
-        if (arguments.length==2) {
+        if (arguments.length == 2) {
             this._position.x = newPosOrxValue;
             this._position.y = yValue;
             //this._position = cc.p(newPosOrxValue,yValue);
-        } else if (arguments.length==1) {
+        } else if (arguments.length == 1) {
             this._position.x = newPosOrxValue.x;
             this._position.y = newPosOrxValue.y;
         }
@@ -920,7 +904,7 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
      */
     setScheduler:function (scheduler) {
         if (this._scheduler != scheduler) {
-            this.unscheduleAllSelectors();
+            this.unscheduleAllCallbacks();
             this._scheduler = scheduler;
         }
     },
@@ -962,7 +946,7 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     cleanup:function () {
         // actions
         this.stopAllActions();
-        this.unscheduleAllSelectors();
+        this.unscheduleAllCallbacks();
 
         // timers
         this._arrayMakeObjectsPerformSelector(this._children, cc.Node.StateCallbackType.cleanup);
@@ -1010,7 +994,11 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
      * @param {Number} tag
      */
     addChild:function (child, zOrder, tag) {
-        var argnum = arguments.length;
+        if (child === this) {
+            console.warn('cc.Node.addChild: An Node can\'t be added as a child of itself.');
+            return;
+        }
+
         cc.Assert(child != null, "Argument must be non-nil");
         cc.Assert(child._parent == null, "child already added. It can't be added again");
         var tempzOrder = (zOrder != null) ? zOrder : child.getZOrder();
@@ -1033,18 +1021,27 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
 
     // composition: REMOVE
     /** Remove itself from its parent node. If cleanup is true, then also remove all actions and callbacks. <br/>
-     *  If the node orphan, then nothing happens.
+     * If the cleanup parameter is not passed, it will force a cleanup. <br/>
+     * If the node orphan, then nothing happens.
      * @param {Boolean} cleanup
      */
-    removeFromParentAndCleanup:function (cleanup) {
-        if (this._parent)
+    removeFromParent:function (cleanup) {
+        if (this._parent) {
+            if (arguments.length === 0)
+                cleanup = true;
             this._parent.removeChild(this, cleanup);
+        }
+    },
+    /** XXX deprecated */
+    removeFromParentAndCleanup:function (cleanup) {
+        cc.log("removeFromParentAndCleanup is deprecated. Use removeFromParent instead");
+        this.removeFromParent(cleanup);
     },
 
     /** <p>Removes a child from the container. It will also cleanup all running actions depending on the cleanup parameter. </p>
-     *
+     * If the cleanup parameter is not passed, it will force a cleanup. <br/>
      *<p> "remove" logic MUST only be on this method  <br/>
-     * If a class want's to extend the 'removeChild' behavior it only needs <br/>
+     * If a class wants to extend the 'removeChild' behavior it only needs <br/>
      * to override this method </p>
      *
      * @param {cc.Node} child
@@ -1056,6 +1053,10 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
             return;
         }
 
+        // If only one argument, then force cleanup
+        if (arguments.length == 1)
+            cleanup = true;
+
         if (this._children.indexOf(child) > -1) {
             this._detachChild(child, cleanup);
         }
@@ -1065,7 +1066,8 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     },
 
     /**
-     * Removes a child from the container by tag value. It will also cleanup all running actions depending on the cleanup parameter
+     * Removes a child from the container by tag value. It will also cleanup all running actions depending on the cleanup parameter.
+     * If the cleanup parameter is not passed, it will force a cleanup. <br/>
      * @param {Number} tag
      * @param {Boolean} cleanup
      */
@@ -1081,13 +1083,22 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
         }
     },
 
+    /* XXX deprecated */
+    removeAllChildrenWithCleanup:function (cleanup) {
+        cc.log("removeAllChildrenWithCleanup is deprecated. Use removeFromParent instead");
+        this.removeAllChildren(cleanup);
+    },
+
     /**
      * Removes all children from the container and do a cleanup all running actions depending on the cleanup parameter.
+     * If the cleanup parameter is not passed, it will force a cleanup. <br/>
      * @param {Boolean} cleanup
      */
-    removeAllChildrenWithCleanup:function (cleanup) {
+    removeAllChildren:function (cleanup) {
         // not using detachChild improves speed here
         if (this._children != null) {
+            if (arguments.length === 0)
+                cleanup = true;
             for (var i = 0; i < this._children.length; i++) {
                 var node = this._children[i];
                 if (node) {
@@ -1501,9 +1512,9 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     },
 
     /**
-     * schedules the "update" selector with a custom priority. This selector will be called every frame.<br/>
-     * Scheduled selectors with a lower priority will be called before the ones that have a higher value.<br/>
-     * Only one "update" selector could be scheduled per node (You can't have 2 'update' selectors).<br/>
+     * schedules the "update" callback function with a custom priority. This callback function will be called every frame.<br/>
+     * Scheduled callback functions with a lower priority will be called before the ones that have a higher value.<br/>
+     * Only one "update" callback function could be scheduled per node (You can't have 2 'update' callback functions).<br/>
      * @param {Number} priority
      */
     scheduleUpdateWithPriority:function (priority) {
@@ -1518,53 +1529,53 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     },
 
     /**
-     * schedule
-     * @param {function} selector
+     * schedules a callback function with interval, repeat and delay.
+     * @param {function} callback_fn
      * @param {Number} interval
      */
-    schedule:function (selector, interval, repeat, delay) {
+    schedule:function (callback_fn, interval, repeat, delay) {
         interval = interval || 0;
 
-        cc.Assert(selector, "Argument must be non-nil");
+        cc.Assert(callback_fn, "Argument must be non-nil");
         cc.Assert(interval >= 0, "Argument must be positive");
 
         repeat = (repeat == null) ? cc.REPEAT_FOREVER : repeat;
         delay = delay || 0;
 
-        this.getScheduler().scheduleSelector(selector, this, interval, !this._isRunning, repeat, delay);
+        this.getScheduler().scheduleCallbackForTarget(this, callback_fn, interval, repeat, delay, !this._isRunning);
     },
 
     /**
-     * Schedules a selector that runs only once, with a delay of 0 or larger
-     * @param {cc.Class} selector
+     * Schedules a callback function that runs only once, with a delay of 0 or larger
+     * @param {cc.Class} callback_fn
      * @param {Number} delay
      */
-    scheduleOnce:function (selector, delay) {
-        this.schedule(selector, 0.0, 0, delay);
+    scheduleOnce:function (callback_fn, delay) {
+        this.schedule(callback_fn, 0.0, 0, delay);
     },
 
     /**
-     * unschedules a custom selector.
-     * @param {function} selector
+     * unschedules a custom callback function.
+     * @param {function} callback_fn
      */
-    unschedule:function (selector) {
+    unschedule:function (callback_fn) {
         // explicit nil handling
-        if (!selector)
+        if (!callback_fn)
             return;
 
-        this.getScheduler().unscheduleSelector(selector, this);
+        this.getScheduler().unscheduleCallbackForTarget(this, callback_fn);
     },
 
     /**
-     * unschedule all scheduled selectors: custom selectors, and the 'update' selector.<br/>
+     * unschedule all scheduled callback functions: custom callback functions, and the 'update' callback function.<br/>
      * Actions are not affected by this method.
      */
-    unscheduleAllSelectors:function () {
-        this.getScheduler().unscheduleAllSelectorsForTarget(this);
+    unscheduleAllCallbacks:function () {
+        this.getScheduler().unscheduleAllCallbacksForTarget(this);
     },
 
     /**
-     * resumes all scheduled selectors and actions.<br/>
+     * resumes all scheduled callback functions and actions.<br/>
      * Called internally by onEnter
      */
     resumeSchedulerAndActions:function () {
@@ -1612,7 +1623,6 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
                 x += c * -this._anchorPointInPoints.x * this._scaleX + -s * -this._anchorPointInPoints.y * this._scaleY;
                 y += s * -this._anchorPointInPoints.x * this._scaleX + c * -this._anchorPointInPoints.y * this._scaleY;
             }
-
 
             // Build Transform Matrix
             this._transform = cc.AffineTransformMake(c * this._scaleX, s * this._scaleX,
@@ -1741,6 +1751,16 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
      * @param {Number} dt
      */
     update:function (dt) {
+    },
+
+    /**
+     * Currently JavaScript Bindigns (JSB), in some cases, needs to use retain and release. This is a bug in JSB,
+     * and the ugly workaround is to use retain/release. So, these 2 methods were added to be compatible with JSB.
+     * This is a hack, and should be removed once JSB fixes the retain/release bug
+     */
+    retain:function () {
+    },
+    release:function () {
     }
 });
 
