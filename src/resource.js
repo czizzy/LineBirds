@@ -17,6 +17,8 @@ var imgDir = "res/img/",
 
 var bgm = 'res/soundtrack';
 
+var PTM_RATIO = 32;
+
 var g_ressources = [
     //image
     {type:"image", src: imgBackground},
