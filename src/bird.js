@@ -1,15 +1,20 @@
 var Bird = cc.Sprite.extend({
-    _body: undefined,
-    _currentBodyIndex: 0,
-    _currentBeakIndex: 0,
-    _isFlying: false,
-
-    _velocitiesX: [0, 0, 0, 0, 0],
-    _velocitiesY: [0, 0, 0, 0, 0],
     _numVelocities: 5,
-    _nextVelocity: 0,
 
-    ctor: function() {
+    ctor: function(attrs) {
+        this._isFlying = false;
+        this._needEffect = false;
+
+        this._currentBodyIndex = 0;
+        this._currentBeakIndex = 0;
+        this._velocitiesX = [0, 0, 0, 0, 0];
+        this._velocitiesY = [0, 0, 0, 0, 0];
+        this._nextVelocity = 0;
+
+        if(attrs) {
+            this._needEffect = attrs.needEffect;
+        }
+
         cc.SpriteFrameCache.getInstance().addSpriteFrames(plist, imgSpriteSheet);
 
         this.drawBird();
@@ -17,11 +22,19 @@ var Bird = cc.Sprite.extend({
     },
 
     fly: function() {
+        if(!this._isFlying && this._needEffect) {
+            cc.AudioEngine.getInstance().playEffect(effectFlap);
+        }
         this._isFlying = true;
     },
 
-    stopFly: function() {
+    stopFly: function() { 
         this._isFlying = false;
+        cc.AudioEngine.getInstance().stopEffect(effectFlap);
+    },
+
+    isFlying: function() {
+        return this._isFlying;
     },
 
     drawBird: function() {
@@ -58,7 +71,8 @@ var Bird = cc.Sprite.extend({
             b2Body = Box2D.Dynamics.b2Body, 
             b2FixtureDef = Box2D.Dynamics.b2FixtureDef, 
             b2CircleShape = Box2D.Collision.Shapes.b2CircleShape,
-            b2Vec2 = Box2D.Common.Math.b2Vec2;
+            b2Vec2 = Box2D.Common.Math.b2Vec2,
+            b2FilterData = Box2D.Dynamics.b2FilterData;
 
         var bodyDef = new b2BodyDef();
         bodyDef.type = b2Body.b2_dynamicBody;
@@ -70,10 +84,15 @@ var Bird = cc.Sprite.extend({
 
         this.physics = world.CreateBody(bodyDef);
 
+        var filterData = new b2FilterData();
+        filterData.groupIndex = -1;
+
         var fixtureDef = new b2FixtureDef();
         fixtureDef.shape = dynamicBox;
         fixtureDef.density = 1.0;
         fixtureDef.friction = 0.3;
+        fixtureDef.filter = filterData;
+        fixtureDef.userData = 'bird';
         this.physics.CreateFixture(fixtureDef);
 
         return this.physics;
@@ -93,61 +112,67 @@ var Bird = cc.Sprite.extend({
         }
         this.setPosition(cc.PointMake(bird.GetPosition().x * PTM_RATIO, bird.GetPosition().y * PTM_RATIO));
         this.setRotation(-1 * cc.RADIANS_TO_DEGREES(Math.atan2(weightedVelY / this._numVelocities, weightedVelX / this._numVelocities)));
+    },
+
+    setB2AndC2Position: function(p){
+        this.setPosition(p);
+        this.physics.SetPosition(new Box2D.Common.Math.b2Vec2(p.x / PTM_RATIO, p.y / PTM_RATIO));
+
     }
 });
 
 var BirdKirby = Bird.extend({
-    ctor: function() {
+    ctor: function(attrs) {
         this.name = 'bird_kirby';
         this.beakName = 'beak_s_';
-        this._super();
+        this._super(attrs);
     }
 });
 
 var BirdBurpy = Bird.extend({
-    ctor: function() {
+    ctor: function(attrs) {
         this.name = 'bird_burpy';
         this.beakName = 'beak_p_';
-        this._super();
+        this._super(attrs);
     }
 });
 
 var BirdPablo = Bird.extend({
-    ctor: function() {
+    ctor: function(attrs) {
         this.name = 'bird_pablo';
         this.beakName = 'beak_s_';
-        this._super();
+        this._super(attrs);
     }
 });
 
 var BirdPebbles = Bird.extend({
-    ctor: function() {
+    ctor: function(attrs) {
         this.name = 'bird_pebbles';
         this.beakName = 'beak_s_';
-        this._super();
+        this._super(attrs);
     }
 });
 
 var BirdHoudini = Bird.extend({
-    ctor: function() {
+    ctor: function(attrs) {
         this.name = 'bird_houdini';
         this.beakName = 'beak_b_';
-        this._super();
+        this._super(attrs);
     }
 });
 
 var BirdPerky = Bird.extend({
-    ctor: function() {
+    ctor: function(attrs) {
         this.name = 'bird_perky';
         this.beakName = 'beak_p_';
-        this._super();
+        this._super(attrs);
     }
 });
 
 var BirdSmoky = Bird.extend({
-    ctor: function() {
+    ctor: function(attrs) {
         this.name = 'bird_smoky';
         this.beakName = 'beak_b_';
-        this._super();
+        this._super(attrs);
     }
 });

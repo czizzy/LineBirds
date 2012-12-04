@@ -27,7 +27,7 @@
 (function () {
     var d = document;
     var c = {
-        COCOS2D_DEBUG:2, //0 to turn debug off, 1 for basic debug, and 2 for full debug
+        COCOS2D_DEBUG:0, //0 to turn debug off, 1 for basic debug, and 2 for full debug
         box2d:true,
         showFPS:true,
         frameRate:60,
@@ -36,11 +36,12 @@
         //SingleEngineFile:'',
         appFiles:[
             'src/resource.js',
-            'src/bird.js',
-            'src/myApp.js',
-            'src/background.js',
-            'src/menu.js',
-            'src/box2d.js'
+            'src/preference.js',
+            'src/Bird.js',
+            'src/layer/B2World.js',
+            'src/layer/Background.js',
+            'src/layer/Menu.js',
+            'src/layer/Game.js'
         ]
     };
     window.addEventListener('DOMContentLoaded', function () {

@@ -11,7 +11,9 @@ var imgDir = "res/img/",
     fntSmall = 'res/font/americanPurposeSmall.fnt',
 
     effectClick = 'res/effect/click',
+    effectFlap = 'res/effect/flap',
     effectPlane = 'res/effect/plane',
+    effectHit = 'res/effect/hit',
 
     plist = 'res/gameEngineSpriteSheetDefault.plist';
 
@@ -42,5 +44,7 @@ var g_ressources = [
 
     //effect
     {type: 'effect', src: effectClick},
-    {type: 'effect', src: effectPlane}
+    {type: 'effect', src: effectPlane},
+    {type: 'effect', src: effectFlap},
+    {type: 'effect', src: effectHit}
 ];
