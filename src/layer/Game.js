@@ -28,6 +28,7 @@ var Box2dLayer = B2World.extend({
         this.addNewSpriteWithCoords({x: 480, y: 480});
 
         var label = cc.LabelTTF.create("Press any key", "Marker Felt", 32);
+        label.setColor(new cc.Color3B(255, 0, 0));
         this.addChild(label, 0);
         label.setPosition(cc.PointMake(this.screenSize.width / 2, this.screenSize.height - 50));
     },
