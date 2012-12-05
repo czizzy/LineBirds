@@ -106,8 +106,8 @@ cc.BuilderAnimationManager = cc.Class.extend({
         this._documentControllerName = name;
     },
 
-    getDocumentControllerName:function(name){
-        return this._documentControllerName = name;
+    getDocumentControllerName:function(){
+        return this._documentControllerName;
     },
 
     getDocumentCallbackNames:function(){
@@ -183,7 +183,12 @@ cc.BuilderAnimationManager = cc.Class.extend({
         }
     },
 
+    runAnimationsForSequenceNamed:function(name){
+        this.runAnimations(name);
+    },
+
     runAnimations:function (name, tweenDuration) {
+        tweenDuration = tweenDuration || 0;
         var nSeqId;
         if(typeof(name) === "string")
             nSeqId = this._getSequenceId(name);
@@ -241,6 +246,10 @@ cc.BuilderAnimationManager = cc.Class.extend({
     setAnimationCompletedCallback:function(target,callbackFunc){
         this._target = target;
         this._animationCompleteCallbackFunc = callbackFunc;
+    },
+
+    setCompletedAnimationCallback:function(target,callbackFunc){
+        this.setAnimationCompletedCallback(target,callbackFunc);
     },
 
     debug:function () {
@@ -356,19 +365,18 @@ cc.BuilderAnimationManager = cc.Class.extend({
                 cc.setRelativeScale(node,x,y,nType,propName);
             }else {
                 // [node setValue:value forKey:name];
-
                 // TODO only handle rotation, opacity, displayFrame, color
                 if(propName === "rotation"){
-                    //var rotate = ((CCBValue*)pValue).getFloatValue();
                     node.setRotation(value);
                 } else if(propName === "opacity"){
-                    //var opacity = ((CCBValue*)pValue).getByteValue();
                     node.setOpacity(value);
                 } else if(propName === "displayFrame"){
                     node.setDisplayFrame(value);
                 } else if(propName === "color"){
-                    //var color = (ccColor3BWapper*)pValue;
                     node.setColor(value.getColor());
+                } else if( propName === "visible"){
+                    value = value || false;
+                    node.setVisible(value);
                 } else {
                     cc.log("unsupported property name is "+ propName);
                     cc.Assert(false, "unsupported property now");
@@ -458,8 +466,16 @@ cc.BuilderAnimationManager = cc.Class.extend({
     },
 
     _sequenceCompleted:function () {
+        if(this._lastCompletedSequenceName != this._runningSequence.getName()){
+            this._lastCompletedSequenceName = this._runningSequence.getName();
+        }
+
         if (this._delegate)
             this._delegate.completedAnimationSequenceNamed(this._runningSequence.getName());
+
+        if(this._target && this._animationCompleteCallbackFunc){
+            this._animationCompleteCallbackFunc.call(this._target);
+        }
 
         var nextSeqId = this._runningSequence.getChainedSequenceId();
         this._runningSequence = null;

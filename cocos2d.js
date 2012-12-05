@@ -29,6 +29,7 @@
     var c = {
         COCOS2D_DEBUG:0, //0 to turn debug off, 1 for basic debug, and 2 for full debug
         box2d:true,
+        chipmunk:false,
         showFPS:true,
         frameRate:60,
         tag:'gameCanvas', //the dom element to run cocos2d on
@@ -37,7 +38,7 @@
         appFiles:[
             'src/resource.js',
             'src/preference.js',
-            'src/Bird.js',
+            'src/sprite/Bird.js',
             'src/layer/B2World.js',
             'src/layer/Background.js',
             'src/layer/Menu.js',
@@ -62,7 +63,7 @@
             //s.src = 'Packed_Release_File.js'; //IMPORTANT: Un-comment this line if you have packed all files into one
 
         d.body.appendChild(s);
-        s.c = c;
+        document.ccConfig = c;
         s.id = 'cocos2d-html5';
         //else if single file specified, load singlefile
     });

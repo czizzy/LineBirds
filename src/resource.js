@@ -39,10 +39,17 @@ var g_ressources = [
     //tmx
 
     //bgm
-    {type: 'bgm', src: bgm},
+    {type: 'bgm', src: bgm + '.mp3'},
+    {type: 'bgm', src: bgm + '.ogg'},
 
     //effect
-    {type: 'effect', src: effectClick},
-    {type: 'effect', src: effectFlap},
-    {type: 'effect', src: effectHit}
+    {type: 'effect', src: effectClick + '.mp3'},
+    {type: 'effect', src: effectClick + '.ogg'},
+    {type: 'effect', src: effectClick + '.wav'},
+    {type: 'effect', src: effectFlap + '.mp3'},
+    {type: 'effect', src: effectFlap + '.ogg'},
+    {type: 'effect', src: effectFlap + '.wav'},
+    {type: 'effect', src: effectHit + '.mp3'},
+    {type: 'effect', src: effectHit + '.ogg'},
+    {type: 'effect', src: effectHit + '.wav'}
 ];

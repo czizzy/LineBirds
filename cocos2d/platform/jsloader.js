@@ -109,7 +109,7 @@
     ];
 
     var d = document;
-    var c = d.querySelector('#cocos2d-html5').c;
+    var c = d.ccConfig;
 
     if (c.loadExtension != null && c.loadExtension == true) {
         engine = engine.concat([
@@ -137,7 +137,8 @@
             '../extensions/CCBReader/CCBKeyframe.js',
             '../extensions/CCBReader/CCBSequence.js',
             '../extensions/CCBReader/CCBRelativePositioning.js',
-            '../extensions/CCBReader/CCBAnimationManager.js'
+            '../extensions/CCBReader/CCBAnimationManager.js',
+            '../extensions/CCControlEditBox.js'
         ]);
     }
 

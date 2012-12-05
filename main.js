@@ -25,13 +25,13 @@
  THE SOFTWARE.
  ****************************************************************************/
 var cocos2dApp = cc.Application.extend({
-    config:document.querySelector('#cocos2d-html5')['c'],
+    config:document['ccConfig'],
     ctor:function (scene) {
         this._super();
         this.startScene = scene;
         cc.COCOS2D_DEBUG = this.config['COCOS2D_DEBUG'];
+        cc.initDebugSetting();
         cc.setup(this.config['tag']);
-        cc.AudioEngine.getInstance().init("mp3,ogg,wav");
         cc.Loader.getInstance().onloading = function () {
             cc.LoaderScene.getInstance().draw();
         };

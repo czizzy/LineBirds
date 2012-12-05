@@ -2,6 +2,7 @@ var Bird = cc.Sprite.extend({
     _numVelocities: 5,
 
     ctor: function(attrs) {
+        this._super();
         this._isFlying = false;
         this._needEffect = false;
 
